@@ -1,0 +1,33 @@
+with lag_lead as (
+ select t.*
+,
+ lag(quantity) over (partition by invoice order by to_date(invoicedate,
+'MM/DD/YYYY HH24:MI')) as lag_quantity,
+ lead(quantity) over (partition by invoice order by
+to_date(invoicedate, 'MM/DD/YYYY HH24:MI')) as lead_quantity
+ from tableretail t
+),
+stats as (
+ select stockcode,
+ count(distinct price) as distinct_prices,
+ avg(price) as avg_price,
+ case when count(distinct price) <= 1 then 0 else stddev_pop(price)
+end as std_dev_price,
+ case when count(distinct price) <= 1 then 0 else variance(price) end
+as variance_price
+ from tableretail
+ group by stockcode
+)
+select
+ s.stockcode,
+ 
+s.distinct_prices,
+ round(s.avg_price, 2) as avg_price,
+ round(s.std_dev_price, 2) as std_dev_price,
+ round(s.variance_price, 2) as variance_price,
+ round(covar_pop(ll.quantity, ll.price), 2) as covariance,
+ round(corr(ll.quantity, ll.price), 2) as correlation
+from stats s
+left join lag_lead ll on s.stockcode = ll.stockcode
+group by s.stockcode, s.distinct_prices, s.avg_price, s.std_dev_price,
+s.variance_price;

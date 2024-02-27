@@ -1,0 +1,18 @@
+with purchasetimes as (
+ select
+ to_date(invoicedate, 'MM/DD/YYYY HH24:MI') as most_purchase_time,
+ count(*) as purchasecount,
+ rank() over (order by count(*) desc) as rankbypurchasecount
+ from
+ tableretail
+ where
+ country = 'United Kingdom'
+ group by
+ to_date(invoicedate, 'MM/DD/YYYY HH24:MI')
+)
+select
+ most_purchase_time
+from
+ purchasetimes
+where
+ rankbypurchasecount = 1;
