@@ -1,0 +1,34 @@
+with ranked_transactions as (
+ select
+ cust_id,
+ to_date(calendar_dt, 'YYYY-MM-DD') as calendar_dt,
+ row_number() over (partition by cust_id order by
+to_date(calendar_dt, 'YYYY-MM-DD')) as rn
+ from
+ transactions
+),
+consecutive_days as (
+ select
+ cust_id,
+ calendar_dt,
+ calendar_dt - rn as grp
+ from
+ ranked_transactions
+)
+select
+ cust_id,
+ max(count_consecutive_days) as max_consecutive_days
+from (
+ select
+ cust_id,
+ count(*) as count_consecutive_days
+ from
+ consecutive_days
+ group by
+ cust_id,
+ grp
+) max_consecutive_days_per_group
+group by
+ cust_id
+order by
+ cust_id;

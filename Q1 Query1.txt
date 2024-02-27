@@ -1,0 +1,4 @@
+select distinct invoicedate, sum(quantity) over (partition by invoicedate) as
+dailysales
+from tableretail
+order by invoicedate;

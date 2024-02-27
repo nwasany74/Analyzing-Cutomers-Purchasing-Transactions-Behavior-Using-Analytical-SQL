@@ -1,0 +1,8 @@
+with customerspending as (
+ select customer_id, sum(quantity * price) as totalspending
+ from tableretail
+ group by customer_id
+)
+select customer_id, totalspending,
+ rank() over (order by totalspending desc) as spendingrank
+from customerspending;

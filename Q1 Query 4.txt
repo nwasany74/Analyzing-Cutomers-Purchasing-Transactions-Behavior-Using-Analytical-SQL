@@ -1,0 +1,10 @@
+with productrevenue as (
+ select stockcode,
+ quantity * price as revenue,
+ row_number() over (partition by stockcode order by (quantity * 
+price) desc) as ranking
+ from tableretail
+)
+select stockcode, revenue
+from productrevenue
+where ranking = 1;

@@ -1,0 +1,10 @@
+select stockcode,
+ totalquantity,
+ rank() over (order by totalquantity desc) as rank
+from (select stockcode,
+ sum(quantity) as totalquantity
+ from tableretail
+ group by stockcode
+ order by sum(quantity) desc
+ ) subquery
+where rownum <= 10;
